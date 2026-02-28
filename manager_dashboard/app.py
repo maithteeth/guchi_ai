@@ -16,10 +16,24 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 env_path = os.path.join(current_dir, '..', '.env.local')
 load_dotenv(env_path)
 
-SUPABASE_URL = os.environ.get("NEXT_PUBLIC_SUPABASE_URL", "")
-SUPABASE_KEY = os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY", "")
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
-PAYPAL_CLIENT_ID = os.environ.get("PAYPAL_CLIENT_ID", "test")
+SUPABASE_URL = ""
+SUPABASE_KEY = ""
+GEMINI_API_KEY = ""
+PAYPAL_CLIENT_ID = "test"
+
+# Streamlit CloudのSecretsか、ローカルのOS環境変数から取得する関数
+def get_env_var(key, default=""):
+    try:
+        if key in st.secrets:
+            return st.secrets[key]
+    except Exception:
+        pass
+    return os.environ.get(key, default)
+
+SUPABASE_URL = get_env_var("NEXT_PUBLIC_SUPABASE_URL", "")
+SUPABASE_KEY = get_env_var("NEXT_PUBLIC_SUPABASE_ANON_KEY", "")
+GEMINI_API_KEY = get_env_var("GEMINI_API_KEY", "")
+PAYPAL_CLIENT_ID = get_env_var("PAYPAL_CLIENT_ID", "test")
 
 # クライアント初期化
 if SUPABASE_URL and SUPABASE_KEY:
