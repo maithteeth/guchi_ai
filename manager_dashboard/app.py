@@ -34,6 +34,12 @@ st.markdown("""
         color: #F8FAFC !important;
     }
     
+    /* Labels */
+    label, label p, [data-testid="stWidgetLabel"] p, .stTextInput label p {
+        color: #e2e8f0 !important;
+        font-weight: 600 !important;
+    }
+    
     /* Inputs */
     .stTextInput > div > div > input {
         background-color: #0A0F1C !important;
