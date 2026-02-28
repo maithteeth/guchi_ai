@@ -9,7 +9,84 @@ import streamlit.components.v1 as components
 # ==========================================
 # 1. 環境設定と初期化
 # ==========================================
-st.set_page_config(page_title="経営者ダッシュボード | 課題解析AI", layout="wide")
+st.set_page_config(page_title="経営者ダッシュボード | 課題解析AI", layout="wide", initial_sidebar_state="expanded")
+
+# Custom CSS for Dark Glassmorphism Theme
+st.markdown("""
+<style>
+    /* Main Background & Text */
+    .stApp {
+        background-color: #0A0F1C;
+        color: #F8FAFC;
+    }
+    
+    /* Sidebar Background */
+    [data-testid="stSidebar"] {
+        background-color: #131B2F !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    [data-testid="stSidebar"] * {
+        color: #F8FAFC !important;
+    }
+    
+    /* Headers */
+    h1, h2, h3, h4, h5, h6 {
+        color: #F8FAFC !important;
+    }
+    
+    /* Inputs */
+    .stTextInput > div > div > input {
+        background-color: #0A0F1C !important;
+        color: #F8FAFC !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 0.5rem;
+    }
+    .stTextInput > div > div > input:focus {
+        border-color: #06b6d4 !important;
+        box-shadow: 0 0 0 1px #06b6d4 !important;
+    }
+    
+    /* Primary Buttons */
+    .stButton > button {
+        background: linear-gradient(to right, #6366F1, #8B5CF6) !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 0.5rem !important;
+        box-shadow: 0 0 15px rgba(99, 102, 241, 0.3) !important;
+        transition: all 0.3s ease !important;
+        font-weight: bold !important;
+    }
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0 25px rgba(99, 102, 241, 0.5) !important;
+    }
+    
+    /* Selectbox */
+    .stSelectbox > div > div {
+        background-color: #0A0F1C !important;
+        color: #F8FAFC !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
+    
+    /* Info/Success/Error boxes */
+    .stAlert {
+        background-color: rgba(19, 27, 47, 0.8) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: #e2e8f0 !important;
+        backdrop-filter: blur(10px);
+    }
+    
+    /* Markdown Text */
+    .stMarkdown p {
+        color: #cbd5e1 !important;
+    }
+    
+    /* Horizontal rule */
+    hr {
+        border-color: rgba(255, 255, 255, 0.1) !important;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 # 環境変数の読み込み (app.pyが配置されているmanager_dashboardの親ディレクトリにある.env.localを読み込む)
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -188,7 +265,7 @@ def render_locked_report(report_id, title, company_id, manager_id):
     st.markdown(f"### ● {title}")
     
     mock_blur = """
-    <div style="filter: blur(8px); user-select: none; color: transparent; text-shadow: 0 0 15px rgba(0,0,0,0.5);">
+    <div style="filter: blur(8px); user-select: none; color: transparent; text-shadow: 0 0 15px rgba(255,255,255,0.4);">
         この部分はロックされています。この部分はロックされています。この部分はロックされています。
         従業員の深刻な声がここに表示されます。改善のための具体的なアクションプランが含まれています。
         この部分はロックされています。この部分はロックされています。この部分はロックされています。
@@ -308,7 +385,7 @@ else:
             st.markdown(f"### {prefix} {title}")
             with st.spinner("AIがデータを解析中..."):
                 content = generate_report(report_id, title, df)
-                st.markdown(f"<div style='background-color:#f8f9fa; padding:15px; border-radius:10px; border-left: 5px solid #004085;'>{content}</div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='background-color: rgba(19, 27, 47, 0.8); padding: 24px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); border-left: 4px solid #06b6d4; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); color: #e2e8f0; font-size: 0.95em; line-height: 1.6;'>{content}</div>", unsafe_allow_html=True)
             st.divider()
         else:
             render_locked_report(report_id, title, company_id, manager_id)
