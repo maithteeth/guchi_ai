@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 
 export async function POST(request: Request) {
     try {
-        const { companyName, managerEmail, managerPassword } = await request.json();
+        const { companyName, managerEmail, managerPassword, rewardTargetPoints, rewardSpan, rewardItem } = await request.json();
 
         if (!companyName || !managerEmail || !managerPassword) {
             return NextResponse.json({ error: '企業名・メールアドレス・パスワードはすべて必須です。' }, { status: 400 });
@@ -23,10 +23,15 @@ export async function POST(request: Request) {
         // サービスロールキーを使用して、RLSの制限を無視できる強力なクライアントを作成
         const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
 
-        // 1. 会社の登録
+        // 1. 会社の登録 (報酬設定含む)
         const { data: company, error: companyError } = await supabaseAdmin
             .from('companies')
-            .insert([{ name: companyName }])
+            .insert([{
+                name: companyName,
+                reward_target_points: parseInt(rewardTargetPoints) || 0,
+                reward_span: rewardSpan || 'monthly',
+                reward_item: rewardItem || ''
+            }])
             .select()
             .single();
 

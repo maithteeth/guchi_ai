@@ -6,6 +6,12 @@ export default function SuperAdminPage() {
     const [companyName, setCompanyName] = useState('');
     const [managerEmail, setManagerEmail] = useState('');
     const [managerPassword, setManagerPassword] = useState('');
+
+    // Reward settings
+    const [rewardTargetPoints, setRewardTargetPoints] = useState('500');
+    const [rewardSpan, setRewardSpan] = useState('monthly');
+    const [rewardItem, setRewardItem] = useState('');
+
     const [inviteUrl, setInviteUrl] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -22,7 +28,14 @@ export default function SuperAdminPage() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ companyName, managerEmail, managerPassword }),
+                body: JSON.stringify({
+                    companyName,
+                    managerEmail,
+                    managerPassword,
+                    rewardTargetPoints,
+                    rewardSpan,
+                    rewardItem
+                }),
             });
 
             const data = await response.json();
@@ -89,6 +102,59 @@ export default function SuperAdminPage() {
                                 className="w-full bg-[#0A0F1C] border border-white/10 text-slate-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-colors placeholder:text-slate-600"
                                 placeholder="例: 株式会社サンプル"
                             />
+                        </div>
+
+                        <hr className="my-8 border-white/10" />
+                        <h3 className="text-md font-bold text-slate-200 mb-4 flex items-center gap-2">
+                            <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                            報酬体系の設定 (従業員の投稿モチベーション用)
+                        </h3>
+
+                        <div className="space-y-4 bg-slate-800/30 p-5 rounded-2xl border border-white/5">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-bold text-slate-300">
+                                        目標ポイント <span className="text-xs font-normal text-slate-500">(1投稿で約10pt)</span>
+                                    </label>
+                                    <input
+                                        type="number"
+                                        required
+                                        min="10"
+                                        value={rewardTargetPoints}
+                                        onChange={(e) => setRewardTargetPoints(e.target.value)}
+                                        className="w-full bg-[#0A0F1C] border border-white/10 text-slate-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-colors"
+                                        placeholder="例: 500"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-bold text-slate-300">
+                                        スパン (期間)
+                                    </label>
+                                    <select
+                                        required
+                                        value={rewardSpan}
+                                        onChange={(e) => setRewardSpan(e.target.value)}
+                                        className="w-full bg-[#0A0F1C] border border-white/10 text-slate-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-colors"
+                                    >
+                                        <option value="weekly">週ごとに集計 (Weekly)</option>
+                                        <option value="monthly">月ごとに集計 (Monthly)</option>
+                                        <option value="yearly">年ごとに集計 (Yearly)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="block text-sm font-bold text-slate-300">
+                                    到達時の報酬内容
+                                </label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={rewardItem}
+                                    onChange={(e) => setRewardItem(e.target.value)}
+                                    className="w-full bg-[#0A0F1C] border border-white/10 text-slate-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-colors placeholder:text-slate-600"
+                                    placeholder="例: Amazonギフト券 500円分"
+                                />
+                            </div>
                         </div>
 
                         <hr className="my-8 border-white/10" />

@@ -14,13 +14,20 @@ export default function EmployeeInputPage() {
 
   // 認証関連ステート
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
+  // 報酬・ポイント関連ステート
+  const [currentPoints, setCurrentPoints] = useState(0);
+  const [rewardConfig, setRewardConfig] = useState({ target: 500, item: '報酬', span: 'monthly' });
 
   useEffect(() => {
     // コンポーネントマウント時にログイン状態をチェック
     const checkAuth = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { session } } = await supabase.auth.getSession();
+        const user = session?.user;
+
         if (!user) {
           setLoading(false);
           return;
@@ -35,6 +42,33 @@ export default function EmployeeInputPage() {
 
         if (profile) {
           setUserProfile({ ...profile, id: user.id });
+          setSession(session);
+
+          // 報酬設定の取得
+          const { data: company } = await supabase
+            .from('companies')
+            .select('reward_target_points, reward_item, reward_span')
+            .eq('id', profile.company_id)
+            .single();
+
+          if (company) {
+            setRewardConfig({
+              target: company.reward_target_points || 500,
+              item: company.reward_item || '特別ボーナス',
+              span: company.reward_span || 'monthly'
+            });
+          }
+
+          // 現在のポイント取得
+          const { data: pointsData } = await supabase
+            .from('point_transactions')
+            .select('points')
+            .eq('user_id', user.id);
+
+          if (pointsData) {
+            const total = pointsData.reduce((acc, curr) => acc + curr.points, 0);
+            setCurrentPoints(total);
+          }
         }
       } catch (err) {
         console.error('Session error:', err);
@@ -54,24 +88,29 @@ export default function EmployeeInputPage() {
     setMessage('');
 
     try {
-      // 登録処理 (RLSで自分のデータとしてINSERTされるか検証される)
-      const { error } = await supabase
-        .from('grievances')
-        .insert([
-          {
-            company_id: userProfile.company_id, // 自分の所属企業ID
-            user_id: userProfile.id,           // 自分のUserID
-            category,
-            details,
-            stress_level: stressLevel,         // 1〜10
-          },
-        ]);
+      // カスタムAPIエンドポイントを使用して安全に送信 (スパム判定 & ポイント計算用)
+      const response = await fetch('/api/grievances/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({
+          category,
+          details,
+          stressLevel
+        }),
+      });
 
-      if (error) {
-        throw error;
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || '送信に失敗しました。');
       }
 
-      setMessage('送信が完了しました！ご意見ありがとうございます。');
+      // 送信成功時のUI更新
+      setCurrentPoints(prev => prev + data.pointsEarned);
+      setMessage(`送信が完了しました！ (+${data.pointsEarned} pt 獲得✨)`);
       setCategory('');
       setDetails('');
       setStressLevel(5);
@@ -134,12 +173,38 @@ export default function EmployeeInputPage() {
 
       <div className="relative z-10 max-w-xl w-full bg-[#131B2F]/80 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl overflow-hidden transform transition-all">
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-teal-400 to-cyan-500"></div>
-        <div className="p-8 md:p-10 border-b border-white/5 bg-slate-900/40 text-center">
+        <div className="p-8 md:p-10 border-b border-white/5 bg-slate-900/40 text-center relative">
           <div className="mx-auto w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center mb-4 border border-white/10 shadow-lg">
             <svg className="w-6 h-6 text-teal-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight mb-2">現場の声 (課題共有)</h1>
-          <p className="text-slate-400 text-sm">あなたの声が職場環境を改善し、チームの「徳」になります</p>
+          <p className="text-slate-400 text-sm mb-6">あなたの声が職場環境を改善し、チームの「徳」になります</p>
+
+          {/* Reward Progress UI */}
+          <div className="bg-[#0A0F1C]/80 border border-white/10 rounded-2xl p-4 mt-2">
+            <div className="flex justify-between items-end mb-2">
+              <div className="text-left">
+                <p className="text-xs text-slate-400 font-bold tracking-wider uppercase mb-1">{rewardConfig.span === 'weekly' ? '今週の目標' : '今月の目標'}: {rewardConfig.item}</p>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-2xl font-black text-teal-400">{currentPoints}</span>
+                  <span className="text-sm font-bold text-slate-500">/ {rewardConfig.target} pt</span>
+                </div>
+              </div>
+              {currentPoints >= rewardConfig.target && (
+                <div className="bg-yellow-500/20 border border-yellow-500/50 text-yellow-400 text-xs font-bold px-3 py-1 rounded-full animate-pulse">
+                  目標達成！🎉
+                </div>
+              )}
+            </div>
+            <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-teal-500 to-cyan-500 transition-all duration-1000 ease-out relative"
+                style={{ width: `${Math.min(100, (currentPoints / rewardConfig.target) * 100)}%` }}
+              >
+                <div className="absolute top-0 right-0 bottom-0 w-8 bg-gradient-to-r from-transparent to-white/30 truncate"></div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="p-8 md:p-10">
