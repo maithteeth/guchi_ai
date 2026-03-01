@@ -110,7 +110,7 @@ export default function EmployeeInputPage() {
 
       // 送信成功時のUI更新
       setCurrentPoints(prev => prev + data.pointsEarned);
-      setMessage(`送信が完了しました！ (+${data.pointsEarned} pt 獲得✨)`);
+      setMessage(`送信が完了しました！ (+${data.pointsEarned} Gpt 獲得✨)`);
       setCategory('');
       setDetails('');
       setStressLevel(5);
@@ -178,7 +178,7 @@ export default function EmployeeInputPage() {
             <svg className="w-6 h-6 text-teal-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight mb-2">現場の声 (課題共有)</h1>
-          <p className="text-slate-400 text-sm mb-6">あなたの声が職場環境を改善し、チームの「徳」になります</p>
+          <p className="text-slate-400 text-sm mb-6">あなたの声が職場環境を改善し、チームの「Gポイント」になります</p>
 
           {/* Reward Progress UI */}
           <div className="bg-[#0A0F1C]/80 border border-white/10 rounded-2xl p-4 mt-2">
@@ -187,7 +187,7 @@ export default function EmployeeInputPage() {
                 <p className="text-xs text-slate-400 font-bold tracking-wider uppercase mb-1">{rewardConfig.span === 'weekly' ? '今週の目標' : '今月の目標'}: {rewardConfig.item}</p>
                 <div className="flex items-baseline gap-1">
                   <span className="text-2xl font-black text-teal-400">{currentPoints}</span>
-                  <span className="text-sm font-bold text-slate-500">/ {rewardConfig.target} pt</span>
+                  <span className="text-sm font-bold text-slate-500">/ {rewardConfig.target} Gpt</span>
                 </div>
               </div>
               {currentPoints >= rewardConfig.target && (
