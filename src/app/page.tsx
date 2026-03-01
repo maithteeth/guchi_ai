@@ -155,9 +155,9 @@ export default function LandingPage() {
                 >
                   <div className="flex justify-between items-end mb-4">
                     <div>
-                      <p className="text-sm text-teal-200/70 font-medium mb-1">獲得した徳 (ポイント)</p>
+                      <p className="text-sm text-teal-200/70 font-medium mb-1">獲得したGポイント</p>
                       <div className="text-3xl font-bold text-teal-300 flex items-center gap-2">
-                        <Coins className="w-6 h-6" /> +{virtuePoints}
+                        <Coins className="w-6 h-6" /> +{virtuePoints} Gpt
                       </div>
                     </div>
                     <div className="text-right">
@@ -200,15 +200,15 @@ export default function LandingPage() {
 
                 <div className="relative">
                   <div className={`transition-all duration-1000 ${!isUnlocked ? 'blur-md opacity-50 select-none' : 'blur-0 opacity-100'}`}>
-                    <h5 className="text-red-400 font-bold mb-2">【AI警告】隠れたコストの特定</h5>
+                    <h5 className="text-red-400 font-bold mb-2">【AI警告】隠れたコストの特定とDX提言</h5>
                     <p className="text-sm text-slate-300 leading-relaxed mb-4">
-                      定時後の残業や無駄な定例会議により、開発部門全体で<span className="font-bold text-white bg-red-900/50 px-1">月間約350万円の逸失利益</span>が発生しています。特に「あの人が休むと回らない」属人化リスクが限界に達しています。
+                      定時後の残業や無駄な定例会議により、開発部門全体で<span className="font-bold text-white bg-red-900/50 px-1">月間約350万円の逸失利益</span>が発生しています。トップレベルのDXコンサルタントAIが、即座に予算承認可能なROIシミュレーション付きの改善案（RAG構築等）を提示します。
                     </p>
                     <div className="bg-slate-800/50 p-4 rounded-lg">
                       <p className="text-xs text-indigo-300 font-mono mb-2">RECOMMENDED ACTION:</p>
                       <ul className="text-sm space-y-2 text-slate-300">
-                        <li>・営業-開発間の定例会議の非同期化（Slack報告への移行）</li>
-                        <li>・若手向けメンター制度の再構築（評価と連動）</li>
+                        <li>・【提案1】社内規程RAG構築による問い合わせゼロ化</li>
+                        <li>・【提案2】営業-開発間の定例会議の非同期化</li>
                       </ul>
                     </div>
                   </div>
@@ -256,7 +256,7 @@ export default function LandingPage() {
               </div>
               <h3 className="text-xl font-bold mb-4">連帯責任型の現物報酬で罪悪感ゼロ</h3>
               <p className="text-slate-400 leading-relaxed">
-                「みんなの愚痴で部署にオフィスグリコやソファが届く」チーム報酬設計。愚痴を言う罪悪感を「チームへの貢献（徳を積む）」へ昇華させ、自然なエンゲージメントを生み出します。
+                「みんなの愚痴で部署にオフィスグリコやソファが届く」チーム報酬設計。愚痴を言う罪悪感を「チームのGポイント獲得」へ昇華させ、自然なエンゲージメントを生み出します。
               </p>
             </div>
             <div className="bg-slate-800/20 border border-white/10 p-8 rounded-3xl hover:bg-slate-800/40 transition-colors">
@@ -299,8 +299,8 @@ export default function LandingPage() {
                 <div className="w-24 h-24 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl flex items-center justify-center mb-4 z-10 shadow-[0_0_30px_rgba(99,102,241,0.5)] transform rotate-3 hover:rotate-0 transition-transform">
                   <Brain className="w-12 h-12 text-white" />
                 </div>
-                <h4 className="font-bold text-lg mb-2">2. 解析コア・スコアリング</h4>
-                <p className="text-sm text-indigo-300">LLMが内容を解析しカテゴリ分け。<br />ストレス度から「徳(ポイント)」を算出。</p>
+                <h4 className="font-bold text-lg mb-2">2. 解析コア・DX提言生成</h4>
+                <p className="text-sm text-indigo-300">LLMが内容を解析し課題を特定。<br />時給数万円クラスのDXコンサルタントAIとして<br />重厚なROIシミュレーション付き提言を出力。</p>
               </div>
 
               <motion.div animate={{ x: [0, 5, 0] }} transition={{ repeat: Infinity, duration: 1.5, delay: 0.2 }} className="hidden md:flex flex-col gap-12 relative">
@@ -312,13 +312,13 @@ export default function LandingPage() {
               <div className="flex flex-col flex-1 gap-8 mt-8 md:mt-0">
                 <div className="bg-slate-800/50 border border-cyan-500/30 p-6 rounded-2xl relative text-left">
                   <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-3 h-3 bg-cyan-500 rounded-full hidden md:block"></div>
-                  <h4 className="font-bold text-cyan-400 flex items-center gap-2 mb-2"><Database className="w-4 h-4" /> 3a. 経営ダッシュボード (Front B)</h4>
-                  <p className="text-xs text-slate-400">匿名化されたデータを集約し、経営リスクや隠れたコストを可視化。</p>
+                  <h4 className="font-bold text-cyan-400 flex items-center gap-2 mb-2"><Database className="w-4 h-4" /> 3a. 経営層ダッシュボード (Front B)</h4>
+                  <p className="text-xs text-slate-400">経営者（閲覧者用マネージャー権限等）がアクセスし、AIが生成した組織の病巣とDX導入案のレポートを有料アンロック・またはサブスクで閲覧。</p>
                 </div>
                 <div className="bg-slate-800/50 border border-teal-500/30 p-6 rounded-2xl relative text-left">
                   <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-3 h-3 bg-teal-500 rounded-full hidden md:block"></div>
-                  <h4 className="font-bold text-teal-400 flex items-center gap-2 mb-2"><CheckCircle2 className="w-4 h-4" /> 3b. ベンダー連携 (Webhook)</h4>
-                  <p className="text-xs text-slate-400">閾値到達で、福利厚生プロバイダーへの商品発注処理を自動実行。</p>
+                  <h4 className="font-bold text-teal-400 flex items-center gap-2 mb-2"><CheckCircle2 className="w-4 h-4" /> 3b. Gポイント特典 (Webhook連携)</h4>
+                  <p className="text-xs text-slate-400">特権管理者(Super Admin)が設定した目標Gポイントに到達すると、福利厚生プロバイダーへの自動発注などが実行可能。</p>
                 </div>
               </div>
 
