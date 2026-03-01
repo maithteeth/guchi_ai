@@ -245,27 +245,39 @@ else:
     st.sidebar.markdown(f"**サブスク状態:** {'[ 有効 (全開放) ]' if is_subscribed else '[ 未登録 ]'}")
 
 # ==========================================
-# 6. Gemini AI レポート生成関数
+# 6. Gemini AI 解析・提言生成関数
 # ==========================================
 def generate_report(report_id, title, df):
     if df.empty:
         return "データが不足しているため解析できません。"
         
+    # テスト対応: APIコスト節約のため、ai_intro以外はダミーを返す
+    if report_id != "ai_intro":
+        return f"【開発中ダミーデータ】\n\n**{title}** に関する「解析と提言」がここに表示されます。現在はプロンプト調整・テスト中のため、APIリクエストをスキップしています。"
+
+    # プロンプトの調整（ユーザーが今後調整しやすいように分離）
     prompt = f"""
-    あなたは企業の経営コンサルタントAIです。以下の従業員の不満データ(JSON形式)を分析し、「{title}」というテーマで経営向けのレポートを作成してください。
-    データ: {df.to_json(orient='records', force_ascii=False)}
-    
-    文字数は300〜500字程度、マークダウンを使用して読みやすくまとめてください。
-    """
+あなたは企業の経営コンサルタントAIです。
+以下の従業員の不満・課題データ(JSON形式)を分析し、「{title}」というテーマで経営陣に向けた【解析と具体的な提言】を作成してください。
+
+データ: 
+{df.to_json(orient='records', force_ascii=False)}
+
+【出力要件】
+- 課題のサマリー（現状の解析）
+- なぜその課題が起きているかの深掘り
+- 経営者が取るべき具体的なアクション（提言）
+- 文字数は400〜600字程度、マークダウンで読みやすく構造化してください。
+"""
     if GEMINI_API_KEY:
         model = genai.GenerativeModel("gemini-2.5-flash")
         response = model.generate_content(prompt)
         return response.text
     else:
-        return f"【ダミー解析結果】\n{title}に関する分析結果です。データ件数は{len(df)}件です。深刻な課題が散見されますが、APIキーが未設定のため詳細は表示できません。"
+        return f"【エラー】Gemini APIキーが設定されていません。"
 
 # ==========================================
-# 6. PayPal 決済UI部品 (モザイク＆ボタン)
+# 7. PayPal 決済UI部品 (モザイク＆ボタン)
 # ==========================================
 def render_locked_report(report_id, title, company_id, manager_id):
     st.markdown(f"### ● {title}")
@@ -273,7 +285,7 @@ def render_locked_report(report_id, title, company_id, manager_id):
     mock_blur = """
     <div style="filter: blur(8px); user-select: none; color: transparent; text-shadow: 0 0 15px rgba(255,255,255,0.4);">
         この部分はロックされています。この部分はロックされています。この部分はロックされています。
-        従業員の深刻な声がここに表示されます。改善のための具体的なアクションプランが含まれています。
+        従業員の深刻な声に基づく高度な解析と、経営改善のための具体的な提言が含まれています。
         この部分はロックされています。この部分はロックされています。この部分はロックされています。
     </div>
     """
@@ -281,7 +293,7 @@ def render_locked_report(report_id, title, company_id, manager_id):
     
     col1, col2 = st.columns(2)
     with col1:
-        st.info("▶ **単発アンロック (¥300)**\n\nこのレポートのみを閲覧します")
+        st.info("▶ **単発アンロック (¥300)**\n\nこの解析・提言のみを閲覧します")
         # 簡易的なPayPalボタン (Sandbox用)
         paypal_html = f"""
         <div id="paypal-button-container-{report_id}"></div>
@@ -307,7 +319,7 @@ def render_locked_report(report_id, title, company_id, manager_id):
         components.html(paypal_html, height=150)
         
     with col2:
-        st.success("▶ **月額見放題プラン (¥3,000/月)**\n\nすべてのレポートを無制限に閲覧")
+        st.success("▶ **月額見放題プラン (¥3,000/月)**\n\nすべての解析・提言を無制限に閲覧")
         sub_html = f"""
         <div id="paypal-sub-container-{report_id}"></div>
         <!-- ※実際のサブスク決済は vault=true や intent=subscription などのパラメータとPlan IDが必要です -->
@@ -360,7 +372,7 @@ if st.sidebar.button("ログアウト"):
     supabase.auth.sign_out()
     st.rerun()
 
-st.title("■ AIインサイトレポート")
+st.title("■ AI解析・改善提言ダッシュボード")
 df = get_grievances(company_id)
 
 if df.empty:
@@ -385,7 +397,7 @@ else:
         report_id = rep["id"]
         title = rep["title"]
         
-        # 無料レポート or サブスク有効 or 個別購入済み なら表示
+        # 無料(ai_intro) or サブスク有効 or 個別購入済み なら表示
         if rep["free"] or is_subscribed or report_id in purchased_reports:
             prefix = "○" if rep["free"] else "●"
             st.markdown(f"### {prefix} {title}")
