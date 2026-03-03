@@ -6,6 +6,9 @@ import os
 from dotenv import load_dotenv
 import streamlit.components.v1 as components
 import json
+import markdown
+import pdfkit
+import base64
 
 # ==========================================
 # 1. 環境設定と初期化
@@ -246,8 +249,63 @@ else:
     st.sidebar.markdown(f"**サブスク状態:** {'[ 有効 (全開放) ]' if is_subscribed else '[ 未登録 ]'}")
 
 # ==========================================
-# 6. Gemini AI 解析・提言生成関数
+# 6. Gemini AI 解析・提言生成関数 & PDF出力
 # ==========================================
+def create_pdf_from_md(md_content, title):
+    # マークダウンをHTMLに変換
+    html_body = markdown.markdown(md_content, extensions=['tables'])
+    
+    # PDF用のCSS＆HTMLラッパー (日本語フォント対応)
+    html_content = f"""
+    <!DOCTYPE html>
+    <html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <title>{title}</title>
+        <style>
+            body {{
+                font-family: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+                color: #333;
+                line-height: 1.6;
+                padding: 20px;
+                background-color: #fff;
+            }}
+            h1, h2, h3, h4 {{ color: #1e293b; border-bottom: 1px solid #cbd5e1; padding-bottom: 8px; }}
+            h1 {{ font-size: 24px; }}
+            h2 {{ font-size: 20px; margin-top: 24px; }}
+            h3 {{ font-size: 16px; margin-top: 20px; }}
+            code {{ background-color: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: monospace; color: #0f172a; font-weight: bold; }}
+            pre code {{ display: block; padding: 10px; overflow-x: auto; }}
+            ul {{ padding-left: 20px; }}
+            hr {{ border: 0; border-top: 1px dashed #cbd5e1; margin: 20px 0; }}
+        </style>
+    </head>
+    <body>
+        <h1>■ {title}</h1>
+        {html_body}
+    </body>
+    </html>
+    """
+    
+    options = {
+        'page-size': 'A4',
+        'margin-top': '0.75in',
+        'margin-right': '0.75in',
+        'margin-bottom': '0.75in',
+        'margin-left': '0.75in',
+        'encoding': "UTF-8",
+        'no-outline': None
+    }
+    
+    try:
+        # ローカル環境のパスやCloud環境に応じてwkhtmltopdfを実行
+        # Streamlit Cloudでは packages.txt で wkhtmltopdf をインストール済み
+        pdf_bytes = pdfkit.from_string(html_content, False, options=options)
+        return pdf_bytes
+    except Exception as e:
+        print(f"PDF生成エラー: {e}")
+        return None
+
 def format_ai_intro_report(json_str):
     try:
         data = json.loads(json_str)
@@ -456,6 +514,21 @@ else:
             with st.spinner("AIがデータを解析中..."):
                 content = generate_report(report_id, title, df)
                 st.markdown(f"<div style='background-color: rgba(19, 27, 47, 0.8); padding: 24px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); border-left: 4px solid #06b6d4; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); color: #e2e8f0; font-size: 0.95em; line-height: 1.6;'>{content}</div>", unsafe_allow_html=True)
+                
+                # PDFエクスポートボタン
+                if content and not content.startswith("【エラー】"):
+                    pdf_data = create_pdf_from_md(content, title)
+                    if pdf_data:
+                        st.download_button(
+                            label="📥 この解析レポートをPDFでダウンロード",
+                            data=pdf_data,
+                            file_name=f"{report_id}_report.pdf",
+                            mime="application/pdf",
+                            help="役員会議や稟議書の添付資料としてお使いいただけます"
+                        )
+                    else:
+                        st.caption("※ローカル環境でPDFを出力するにはwkhtmltopdfのインストールが必要です（本番環境では利用可能です）")
+
             st.divider()
         else:
             render_locked_report(report_id, title, company_id, manager_id)
