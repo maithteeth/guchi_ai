@@ -309,29 +309,53 @@ def create_pdf_from_md(md_content, title):
 def format_ai_intro_report(json_str):
     try:
         data = json.loads(json_str)
-        md = f"## 📊 Executive Summary\n{data.get('executive_summary', '')}\n\n"
         
-        # 2カラムレイアウトでスコアを表示
-        md += f"**AI導入 Readiness Score**: `{data.get('readiness_score', 0)} / 100`  |  **獲得 Gポイント**: `{data.get('earned_g_points', 0)} Gpt`\n\n"
+        md = f"## 📊 Executive Summary\n"
+        md += f"> {data.get('executive_summary', '')}\n\n"
         
-        md += "### 📈 課題別深刻度スコア\n"
+        # 2カラムレイアウト風のスコア表示 (マークダウンテーブルを使用)
+        md += "---\n\n"
+        md += "### 🎯 組織の現状インデックス\n\n"
+        md += "| 指標 | スコア | 評価 |\n"
+        md += "| :--- | :---: | :--- |\n"
+        
+        readiness = data.get('readiness_score', 0)
+        readiness_eval = "高 (即時導入推奨)" if readiness >= 70 else ("中 (基盤整備が必要)" if readiness >= 40 else "低 (意識改革から)")
+        md += f"| **AI導入 Readiness Score** | `{readiness} / 100` | {readiness_eval} |\n"
+        md += f"| **蓄積された深刻度 (Gポイント)** | `{data.get('earned_g_points', 0)} Gpt` | 組織の不満の総量 |\n\n"
+        
+        md += "### 📉 課題別 ペイン・インジケーター (ECRS分析起点)\n"
         charts = data.get('chart_data', {})
-        md += f"- 手入力・転記作業: `{'★' * charts.get('manual_work', 0)}{'☆' * (5 - charts.get('manual_work', 0))}` ({charts.get('manual_work', 0)}/5)\n"
-        md += f"- 連絡・確認待ちのロス: `{'★' * charts.get('communication', 0)}{'☆' * (5 - charts.get('communication', 0))}` ({charts.get('communication', 0)}/5)\n"
-        md += f"- ナレッジの属人化: `{'★' * charts.get('knowledge_silo', 0)}{'☆' * (5 - charts.get('knowledge_silo', 0))}` ({charts.get('knowledge_silo', 0)}/5)\n"
-        md += f"- 承認フローの滞留: `{'★' * charts.get('workflow', 0)}{'☆' * (5 - charts.get('workflow', 0))}` ({charts.get('workflow', 0)}/5)\n\n"
         
-        md += "### 💡 具体的なAI/DX導入案 (ROI最適化)\n"
+        def render_stars(score):
+            return f"`{'★' * score}{'☆' * (5 - score)}` ({score}/5)"
+            
+        md += f"- **手入力・転記作業の疲弊**: {render_stars(charts.get('manual_work', 0))}\n"
+        md += f"- **連絡・確認待ちのタイムロス**: {render_stars(charts.get('communication', 0))}\n"
+        md += f"- **ナレッジの属人化・ブラックボックス化**: {render_stars(charts.get('knowledge_silo', 0))}\n"
+        md += f"- **承認フローの滞留・サイロ化**: {render_stars(charts.get('workflow', 0))}\n\n"
+        
+        md += "---\n\n"
+        md += "## 💡 具体的なDX/AI 導入プラン (ROI最適化)\n\n"
+        
         for idx, sol in enumerate(data.get('ai_solutions', [])):
-            md += f"#### 【提案{idx+1}】 {sol.get('title', '')}\n"
-            md += f"**▼ 現状のペインと根本原因 (ECRS分析)**\n{sol.get('current_pain_and_cause', '')}\n\n"
-            md += f"**▼ 推奨技術アーキテクチャ**\n{sol.get('tech_architecture', '')}\n\n"
-            md += f"**▼ 定量的ROIシミュレーション**\n{sol.get('quantitative_roi', '')}\n\n"
+            md += f"### 【提案 {idx+1}】 {sol.get('title', '')}\n\n"
+            
+            md += f"#### 🔍 現状のペインと根本原因\n"
+            md += f"{sol.get('current_pain_and_cause', '')}\n\n"
+            
+            md += f"#### ⚙️ 推奨技術アーキテクチャ\n"
+            md += f"{sol.get('tech_architecture', '')}\n\n"
+            
+            md += f"#### 💰 定量的ROIシミュレーション\n"
+            md += f"> **想定インパクト:**\n> {sol.get('quantitative_roi', '')}\n\n"
+            
             if idx < len(data.get('ai_solutions', [])) - 1:
-                md += "---\n"
+                md += "<br><hr><br>\n\n"
+                
         return md
     except Exception as e:
-        return f"レポートの生成に失敗しました（JSONパースエラー）。\nエラー詳細: {e}\n\n生データ:\n```json\n{json_str}\n```"
+        return f"レポートの表示フォーマット構築に失敗しました。\nエラー詳細: {e}\n\n生データ:\n```json\n{json_str}\n```"
 
 def generate_report(report_id, title, df):
     if df.empty:
