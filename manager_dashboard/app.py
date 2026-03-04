@@ -357,7 +357,7 @@ def format_ai_intro_report(json_str):
     except Exception as e:
         return f"レポートの表示フォーマット構築に失敗しました。\nエラー詳細: {e}\n\n生データ:\n```json\n{json_str}\n```"
 
-def generate_report(report_id, title, df):
+def generate_report(report_id, title, df, cid=None):
     if df.empty:
         return "データが不足しているため解析できません。"
         
@@ -406,6 +406,19 @@ def generate_report(report_id, title, df):
                 response_mime_type="application/json"
             )
         )
+        
+        # 成功した場合、DBにJSONテキストとして保存 (JSONB型に対応)
+        if cid:
+            try:
+                # パースして保存
+                json_data = json.loads(response.text)
+                supabase.table("ai_reports").insert({
+                    "company_id": cid,
+                    "report_data": json_data
+                }).execute()
+            except Exception as e:
+                print(f"DB保存エラー: {e}")
+
         return format_ai_intro_report(response.text)
     else:
         return f"【エラー】Gemini APIキーが設定されていません。"
@@ -536,7 +549,7 @@ else:
             prefix = "○" if rep["free"] else "●"
             st.markdown(f"### {prefix} {title}")
             with st.spinner("AIがデータを解析中..."):
-                content = generate_report(report_id, title, df)
+                content = generate_report(report_id, title, df, company_id)
                 st.markdown(f"<div style='background-color: rgba(19, 27, 47, 0.8); padding: 24px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); border-left: 4px solid #06b6d4; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); color: #e2e8f0; font-size: 0.95em; line-height: 1.6;'>{content}</div>", unsafe_allow_html=True)
                 
                 # PDFエクスポートボタン
